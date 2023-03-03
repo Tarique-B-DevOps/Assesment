@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-app
+  labels:
+    app: laravel
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: laravel
+  template:
+    metadata:
+      labels:
+        app: laravel
+    spec:
+      containers:
+        - name: php
+          image: your-laravel-image
+          ports:
+            - containerPort: 9000
+          env:
+            - name: DB_HOST
+              value: your-db-hostname
+          volumeMounts:
+            - name: laravel-app-storage
+              mountPath: /var/www/html/storage
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: laravel-app-storage
+              mountPath: /var/www/html/storage
+            - name: laravel-app-public
+              mountPath: /var/www/html/public
+      volumes:
+        - name: laravel-app-storage
+          persistentVolumeClaim:
+            claimName: your-pvc-for-storage
+        - name: laravel-app-public
+          persistentVolumeClaim:
+            claimName: your-pvc-for-public
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: laravel-app
+spec:
+  selector:
+    app: laravel
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer

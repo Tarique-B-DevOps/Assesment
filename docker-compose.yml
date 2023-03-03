@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_HOST=mysql
+    networks:
+      - laravel-vue-spa-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8080:8080"
+    networks:
+      - laravel-vue-spa-network
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - .:/var/lib/mysql
+    ports:
+      - "3308:3306"
+    networks:
+      - laravel-vue-spa-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "8081:80"
+    networks:
+      - laravel-vue-spa-network
+
+networks:
+  laravel-vue-spa-network:
+    driver: bridge
